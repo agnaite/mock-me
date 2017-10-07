@@ -39,17 +39,6 @@ def get_tweets(user)
   end
 end
 
-# def get_tweets(user, count)
-#
-#   client = Twitter::REST::Client.new do |config|
-#     config.consumer_key    = ENV['CONSUMER_KEY']
-#     config.consumer_secret = ENV['CONSUMER_SECRET']
-#   end
-#
-#   options = {count: count, include_rts: false}
-#   response = client.user_timeline(user, options)
-# end
-
 def get_text(response)
   tweets = []
 
