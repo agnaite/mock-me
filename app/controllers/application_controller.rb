@@ -1,25 +1,54 @@
 require 'sinatra'
 require 'twitter'
 require 'awesome_print'
+require 'json'
 
 # set :public_folder, File.dirname(__FILE__) + '/static'
 
 get '/' do
-  make_text(make_chains(get_text(get_tweets('realdonaldtrump', 200))))
+  make_text(make_chains(get_text(get_tweets('realdonaldtrump'))))
 end
 
 # Twitter
 
-def get_tweets(user, count)
+def collect_with_max_id(collection=[], max_id=nil, &block)
+  response = yield(max_id)
+  collection += response
+  response.empty? ? collection.flatten : collect_with_max_id(collection, response.last.id - 1, &block)
+end
 
+def get_all_tweets(user)
   client = Twitter::REST::Client.new do |config|
     config.consumer_key    = ENV['CONSUMER_KEY']
     config.consumer_secret = ENV['CONSUMER_SECRET']
   end
 
-  options = {count: count, include_rts: false}
-  response = client.user_timeline(user, options)
+  collect_with_max_id do |max_id|
+    options = {count: 200, include_rts: true}
+    options[:max_id] = max_id unless max_id.nil?
+    client.user_timeline(user, options)
+  end
 end
+
+def get_tweets(user)
+  begin
+    get_all_tweets(user)
+  rescue Twitter::Error::TooManyRequests => error
+    sleep error.rate_limit.reset_in + 1
+    retry
+  end
+end
+
+# def get_tweets(user, count)
+#
+#   client = Twitter::REST::Client.new do |config|
+#     config.consumer_key    = ENV['CONSUMER_KEY']
+#     config.consumer_secret = ENV['CONSUMER_SECRET']
+#   end
+#
+#   options = {count: count, include_rts: false}
+#   response = client.user_timeline(user, options)
+# end
 
 def get_text(response)
   tweets = []
@@ -55,7 +84,9 @@ def make_text(chains)
   words = [key.first, key.last]
   word = chains[key].sample
 
-  ap chains
+  File.open("chains.json","w") do |f|
+    f.write(chains.to_json)
+  end
 
   while word.nil?
     key = [key[1], word]
