@@ -1,12 +1,11 @@
 require 'sinatra'
 require 'twitter'
-require 'tuples'
-require 'pp'
+require 'awesome_print'
 
 # set :public_folder, File.dirname(__FILE__) + '/static'
 
 get '/' do
-  make_text(make_chains(get_text(get_tweets('heyaudy', 200))))
+  make_text(make_chains(get_text(get_tweets('realdonaldtrump', 200))))
 end
 
 # Twitter
@@ -18,7 +17,7 @@ def get_tweets(user, count)
     config.consumer_secret = ENV['CONSUMER_SECRET']
   end
 
-  options = {count: count, include_rts: true}
+  options = {count: count, include_rts: false}
   response = client.user_timeline(user, options)
 end
 
@@ -27,7 +26,7 @@ def get_text(response)
 
   for tweet in response
     for word in tweet.text.split
-      if word[0] != '@'
+      if word[0] != '@' && !word.start_with?('http')
         tweets.push(word)
       end
     end
@@ -39,7 +38,7 @@ def make_chains(words)
   chains = {}
 
   for i in 0..words.length-2
-    key = Tuple.new(words[i], words[i + 1])
+    key = [words[i], words[i + 1]]
     value = words[i + 2]
 
     if !chains.include? key
@@ -56,10 +55,10 @@ def make_text(chains)
   words = [key.first, key.last]
   word = chains[key].sample
 
-  puts chains
+  ap chains
 
   while word.nil?
-    key = Tuple.new(key[1], word)
+    key = [key[1], word]
     words << word
     word = chains[key].sample
   end
