@@ -1,29 +1,68 @@
 require 'sinatra'
 require 'twitter'
+require 'tuples'
+require 'pp'
 
 # set :public_folder, File.dirname(__FILE__) + '/static'
 
-client = Twitter::REST::Client.new do |config|
-  config.consumer_key    = "4CoafBxL4HkxdPNZqRO5Bq3FE"
-  config.consumer_secret = "96nN6p4FicafklCPQ47awscYYM85vvpEAt0vAR61BTaogiuLWe"
-end
-
 get '/' do
-  client.get_all_tweets("agnaite")
+  make_text(make_chains(get_text(get_tweets('heyaudy', 200))))
 end
 
 # Twitter
 
-def collect_with_max_id(collection=[], max_id=nil, &block)
-  response = yield(max_id)
-  collection += response
-  response.empty? ? collection.flatten : collect_with_max_id(collection, response.last.id - 1, &block)
+def get_tweets(user, count)
+
+  client = Twitter::REST::Client.new do |config|
+    config.consumer_key    = ENV['CONSUMER_KEY']
+    config.consumer_secret = ENV['CONSUMER_SECRET']
+  end
+
+  options = {count: count, include_rts: true}
+  response = client.user_timeline(user, options)
 end
 
-def client.get_all_tweets(user)
-  collect_with_max_id do |max_id|
-    options = {count: 2, include_rts: false}
-    options[:max_id] = max_id unless max_id.nil?
-    user_timeline(user, options)
+def get_text(response)
+  tweets = []
+
+  for tweet in response
+    for word in tweet.text.split
+      if word[0] != '@'
+        tweets.push(word)
+      end
+    end
   end
+  tweets << nil
+end
+
+def make_chains(words)
+  chains = {}
+
+  for i in 0..words.length-2
+    key = Tuple.new(words[i], words[i + 1])
+    value = words[i + 2]
+
+    if !chains.include? key
+      chains[key] = []
+    end
+
+    chains[key] << value
+  end
+  chains
+end
+
+def make_text(chains)
+  key = chains.keys.sample
+  words = [key.first, key.last]
+  word = chains[key].sample
+
+  puts chains
+
+  while word.nil?
+    key = Tuple.new(key[1], word)
+    words << word
+    word = chains[key].sample
+  end
+
+  words.join(' ')
 end
