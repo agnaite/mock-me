@@ -6,10 +6,50 @@ require 'json'
 # set :public_folder, File.dirname(__FILE__) + '/static'
 
 get '/' do
-  make_text(make_chains(get_text(get_tweets('realdonaldtrump'))))
+  # username = params['username']
+  @tweet_getter = TweetGetter.new('agnaite')
+  @tweet_getter.get_tweets!
 end
 
-# Twitter
+class TweetGetter
+
+  def initialize username
+    @username = username
+  end
+
+  def username
+    @username
+  end
+
+  def get_tweets!
+    if has_tweet_file?
+      file = File.read(tweet_file)
+      data_hash = JSON.parse(file)
+      make_text(data_hash)
+    else
+      tweets = scrape_twitter
+      File.open(tweet_file, 'w') do |handle|
+        handle.puts JSON.pretty_generate(tweets)
+      end
+    end
+  end
+
+  private
+
+  def scrape_twitter
+    response = get_tweets(@username)
+    text = get_text(response)
+    chains = make_chains(text)
+  end
+
+  def has_tweet_file?
+    File.exists?(tweet_file)
+  end
+
+  def tweet_file
+    "#{username}.json"
+  end
+end
 
 def collect_with_max_id(collection=[], max_id=nil, &block)
   response = yield(max_id)
@@ -56,31 +96,34 @@ def make_chains(words)
   chains = {}
 
   for i in 0..words.length-2
-    key = [words[i], words[i + 1]]
+    word_1 = words[i]
+    word_2 = words[i + 1]
     value = words[i + 2]
 
-    if !chains.include? key
-      chains[key] = []
+    if !chains.include? word_1
+      chains[word_1] = {}
+    end
+    if !chains[word_1].include? word_2
+      chains[word_1][word_2] = []
     end
 
-    chains[key] << value
+    chains[word_1][word_2] << value
   end
   chains
 end
 
 def make_text(chains)
-  key = chains.keys.sample
-  words = [key.first, key.last]
-  word = chains[key].sample
+  word_1 = chains.keys.sample
+  word_2 = chains[word_1].keys.sample
 
-  File.open("chains.json","w") do |f|
-    f.write(chains.to_json)
-  end
+  words = [word_1, word_2]
+  word = chains[word_1][word_2].sample
 
   while word.nil?
-    key = [key[1], word]
-    words << word
-    word = chains[key].sample
+     word_1 = word_2
+     word_2 = word
+     words << word
+     word = chains[word_1][word_2].sample
   end
 
   words.join(' ')
