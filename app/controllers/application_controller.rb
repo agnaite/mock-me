@@ -23,12 +23,12 @@ class TweetGetter
 
   def get_tweets!
     if has_tweet_file?
-      file = File.read(tweet_file)
+      file = File.read('./data/'+tweet_file)
       data_hash = JSON.parse(file)
       make_text(data_hash)
     else
       tweets = scrape_twitter
-      File.open(tweet_file, 'w') do |handle|
+      File.open('./data/'+tweet_file, 'w') do |handle|
         handle.puts JSON.pretty_generate(tweets)
       end
     end
@@ -43,7 +43,7 @@ class TweetGetter
   end
 
   def has_tweet_file?
-    File.exists?(tweet_file)
+    File.exists?('./data/'+tweet_file)
   end
 
   def tweet_file
@@ -64,7 +64,7 @@ def get_all_tweets(user)
   end
 
   collect_with_max_id do |max_id|
-    options = {count: 200, include_rts: true}
+    options = {count: 200, include_rts: false}
     options[:max_id] = max_id unless max_id.nil?
     client.user_timeline(user, options)
   end
@@ -119,11 +119,13 @@ def make_text(chains)
   words = [word_1, word_2]
   word = chains[word_1][word_2].sample
 
-  while word.nil?
+  while (chains.include? word_1) && (chains[word_1].include? word_2) && (words.length < 50)
      word_1 = word_2
      word_2 = word
      words << word
-     word = chains[word_1][word_2].sample
+     if  chains[word_1].include? word_2
+       word = chains[word_1][word_2].sample
+     end
   end
 
   words.join(' ')
