@@ -7,17 +7,25 @@
     <title>mock me</title>
   </head>
   <body>
-    <div class="container">
+    <div class="container-fluid">
+      <nav class="navbar fixed-top navbar-light bg-light">
+        <span class="h1" class="navbar-brand mb-0">mock me</span>
+      </nav>
       <div class="row justify-content-md-center">
         <form action="/" class="col-md-4">
-          <div class="form-group">
-            <input class="form-control" name="username" type="text">
-            <input type="submit">
+          <div class="input-group">
+            <span class="input-group-addon" id="basic-addon1">@</span>
+            <input type="text"
+                   name="username"
+                   class="form-control"
+                   placeholder="Username"
+                   aria-label="Username"
+                   aria-describedby="basic-addon1">
           </div>
         </form>
       </div>
       <div class="row justify-content-md-center">
-        <p class="col-md-6">
+        <p class="generated_text col-md-5">
           <%= text %>
         </p>
       </div>
