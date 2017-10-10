@@ -21,6 +21,11 @@ class TweetGetter
 
   def initialize username
     @username = username
+
+    @client = Twitter::REST::Client.new do |config|
+      config.consumer_key    = ENV['CONSUMER_KEY']
+      config.consumer_secret = ENV['CONSUMER_SECRET']
+    end
   end
 
   def username
@@ -28,23 +33,24 @@ class TweetGetter
   end
 
   def get_tweets!
-    if has_tweet_file?
-      file = File.read('./data/'+tweet_file)
-      data_hash = JSON.parse(file)
-      make_text(data_hash)
-    else
+    # if no file, scrape twitter and write to json
+    if !has_tweet_file?
       tweets = scrape_twitter
       File.open('./data/'+tweet_file, 'w') do |handle|
         handle.puts JSON.pretty_generate(tweets)
       end
     end
+
+    file = File.read('./data/'+tweet_file)
+    data_hash = JSON.parse(file)
+    make_text(data_hash)
   end
 
   private
 
   def scrape_twitter
     response = get_tweets(@username)
-    text = get_text(response)
+    text = clean_up_text(response)
     chains = make_chains(text)
   end
 
@@ -56,6 +62,7 @@ class TweetGetter
     "#{username}.json"
   end
 
+  # get max tweets for given user, from twitter gem
   def collect_with_max_id(collection=[], max_id=nil, &block)
     response = yield(max_id)
     collection += response
@@ -63,15 +70,10 @@ class TweetGetter
   end
 
   def get_all_tweets(user)
-    client = Twitter::REST::Client.new do |config|
-      config.consumer_key    = ENV['CONSUMER_KEY']
-      config.consumer_secret = ENV['CONSUMER_SECRET']
-    end
-
     collect_with_max_id do |max_id|
       options = {count: 200, include_rts: false}
       options[:max_id] = max_id unless max_id.nil?
-      client.user_timeline(user, options)
+      @client.user_timeline(user, options)
     end
   end
 
@@ -84,7 +86,7 @@ class TweetGetter
     end
   end
 
-  def get_text(response)
+  def clean_up_text(response)
     tweets = []
 
     for tweet in response
@@ -119,6 +121,12 @@ class TweetGetter
 
   def make_text(chains)
     word_1 = chains.keys.sample
+
+    # make sure first word is capitalized
+    while word_1 != word_1.capitalize
+      word_1 = chains.keys.sample
+    end
+
     word_2 = chains[word_1].keys.sample
 
     words = [word_1, word_2]
@@ -128,7 +136,7 @@ class TweetGetter
        word_1 = word_2
        word_2 = word
        words << word
-       if  chains[word_1].include? word_2
+       if (chains.include? word_1) && (chains[word_1].include? word_2)
          word = chains[word_1][word_2].sample
        end
     end

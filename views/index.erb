@@ -2,13 +2,25 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link href="<%= url('/style.css') %>" rel="stylesheet" type="text/css" />
     <title>mock me</title>
   </head>
   <body>
-    <form action="/">
-      <input name="username" type="text">
-      <input type="submit">
-    </form>
-    <div><%= text %></div>
+    <div class="container">
+      <div class="row justify-content-md-center">
+        <form action="/" class="col-md-4">
+          <div class="form-group">
+            <input class="form-control" name="username" type="text">
+            <input type="submit">
+          </div>
+        </form>
+      </div>
+      <div class="row justify-content-md-center">
+        <p class="col-md-6">
+          <%= text %>
+        </p>
+      </div>
+    </div>
   </body>
 </html>

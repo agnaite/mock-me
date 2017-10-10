@@ -1,0 +1,93 @@
+{
+  "If": {
+    "I": [
+      "tell"
+    ]
+  },
+  "I": {
+    "tell": [
+      "you"
+    ],
+    "am": [
+      "doing,"
+    ],
+    "will": [
+      "probably"
+    ]
+  },
+  "tell": {
+    "you": [
+      "what"
+    ]
+  },
+  "you": {
+    "what": [
+      "I"
+    ]
+  },
+  "what": {
+    "I": [
+      "am"
+    ]
+  },
+  "am": {
+    "doing,": [
+      "then"
+    ]
+  },
+  "doing,": {
+    "then": [
+      "I"
+    ]
+  },
+  "then": {
+    "I": [
+      "will"
+    ]
+  },
+  "will": {
+    "probably": [
+      "have"
+    ]
+  },
+  "probably": {
+    "have": [
+      "to"
+    ]
+  },
+  "have": {
+    "to": [
+      "..."
+    ]
+  },
+  "to": {
+    "...": [
+      "Oh,"
+    ]
+  },
+  "...": {
+    "Oh,": [
+      "never"
+    ]
+  },
+  "Oh,": {
+    "never": [
+      "mind."
+    ]
+  },
+  "never": {
+    "mind.": [
+      "(smile)"
+    ]
+  },
+  "mind.": {
+    "(smile)": [
+      null
+    ]
+  },
+  "(smile)": {
+    "": [
+      null
+    ]
+  }
+}
