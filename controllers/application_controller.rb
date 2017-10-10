@@ -1,6 +1,5 @@
 require 'sinatra'
 require 'twitter'
-require 'awesome_print'
 require 'json'
 
 set :root, File.join(File.dirname(__FILE__), '..')
@@ -162,6 +161,5 @@ class TweetGetter
     end
     words
   end
-
 end
 
