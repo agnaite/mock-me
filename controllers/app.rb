@@ -11,9 +11,12 @@ get '/' do
     @tweet_getter = TweetGetter.new(username)
     if @tweet_getter.is_user?
       generated_text = @tweet_getter.get_tweets!
+      user_color = @tweet_getter.get_color!
     end
   end
-  erb :index, :locals => {:text => generated_text || '[user not found]'}
+  erb :index, :locals => {:text => generated_text || '[user not found]',
+                          :user => username,
+                          :color => user_color}
 end
 
 class TweetGetter
@@ -47,6 +50,10 @@ class TweetGetter
     file = File.read('./data/'+tweet_file)
     data_hash = JSON.parse(file)
     make_text(data_hash)
+  end
+
+  def get_color!
+    @client.user(@username).profile_link_color
   end
 
   private

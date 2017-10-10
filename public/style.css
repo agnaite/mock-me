@@ -7,9 +7,17 @@ form {
   margin-top: 200px;
 }
 
+.output {
+  padding-top: 60px;
+}
+
 .generated_text {
-  padding-top: 40px;
   text-align: justify;
   line-height: 1.5;
   letter-spacing: 0.4px;
+}
+
+.username {
+  text-align: center;
+  letter-spacing: 1px;
 }
