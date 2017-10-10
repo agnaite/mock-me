@@ -10,11 +10,11 @@ get '/' do
   username = params[:username]
   if !username.nil?
     @tweet_getter = TweetGetter.new(username)
-    generated_text = @tweet_getter.get_tweets!
-  else
-    generated_text = 'no user entered'
+    if @tweet_getter.is_user?
+      generated_text = @tweet_getter.get_tweets!
+    end
   end
-  erb :index, :locals => {:text => generated_text}
+  erb :index, :locals => {:text => generated_text || '[user not found]'}
 end
 
 class TweetGetter
@@ -30,6 +30,10 @@ class TweetGetter
 
   def username
     @username
+  end
+
+  def is_user?
+    @client.user?(@username)
   end
 
   def get_tweets!
@@ -89,6 +93,7 @@ class TweetGetter
   def clean_up_text(response)
     tweets = []
 
+    # get rid of links and @usernames
     for tweet in response
       for word in tweet.text.split
         if word[0] != '@' && !word.start_with?('http')
@@ -120,13 +125,7 @@ class TweetGetter
   end
 
   def make_text(chains)
-    word_1 = chains.keys.sample
-
-    # make sure first word is capitalized
-    while word_1 != word_1.capitalize
-      word_1 = chains.keys.sample
-    end
-
+    word_1 = get_first_word(chains)
     word_2 = chains[word_1].keys.sample
 
     words = [word_1, word_2]
@@ -140,17 +139,28 @@ class TweetGetter
          word = chains[word_1][word_2].sample
        end
     end
+    end_in_punctuation(words).join(' ')
+  end
 
+  def get_first_word(chains)
+    word_1 = chains.keys.sample
+
+    # make sure first word is capitalized
+    while word_1 != word_1.capitalize
+      word_1 = chains.keys.sample
+    end
+    word_1
+  end
+
+  def end_in_punctuation(words)
     # make sure the text ends in punctuation
     words.to_enum.with_index.reverse_each do |word, index|
-      puts index
       if ['!', '.', '?'].include? word[-1]
         words = words[0, index+1]
         break
       end
     end
-
-    words.join(' ')
+    words
   end
 
 end
