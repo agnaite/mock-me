@@ -161,7 +161,7 @@ class TweetGetter
   def end_in_punctuation(words)
     # make sure the text ends in punctuation
     words.to_enum.with_index.reverse_each do |word, index|
-      if ['!', '.', '?'].include? word[-1]
+      if (!word.nil?) && (['!', '.', '?'].include? word[-1])
         words = words[0, index+1]
         break
       end
