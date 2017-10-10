@@ -141,6 +141,15 @@ class TweetGetter
        end
     end
 
+    # make sure the text ends in punctuation
+    words.to_enum.with_index.reverse_each do |word, index|
+      puts index
+      if ['!', '.', '?'].include? word[-1]
+        words = words[0, index+1]
+        break
+      end
+    end
+
     words.join(' ')
   end
 
