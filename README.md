@@ -12,4 +12,4 @@ export CONSUMER_KEY="my_key"
 ```
 - `$ soure secrets.sh`
 - `$ bundle install`
-- `$ ruby controllers/application_controller.rb`
+- `$ ruby controllers/app.rb`
