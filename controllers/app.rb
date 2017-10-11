@@ -7,16 +7,25 @@ set :views, Proc.new { File.join(root, "views") }
 
 get '/' do
   username = params[:username]
+
   if !username.nil?
+    @markov = MarkovGenerator.new
     @tweet_getter = TweetGetter.new(username)
-    if @tweet_getter.is_user?
-      generated_text = @tweet_getter.get_tweets!
+
+    if (!@markov.has_file?(username)) && (@tweet_getter.is_user_with_tweets?)
+      tweets = @tweet_getter.get_tweets!
+      @markov.write_file(@markov.make_chains(tweets), username)
+    end
+    
+    if @tweet_getter.is_user_with_tweets?
       user_color = @tweet_getter.get_color!
+      generated_text = @markov.generate_text(@markov.read_file(username))
     end
   end
-  erb :index, :locals => {:text => generated_text || '[user not found]',
+
+  erb :index, :locals => {:text => generated_text || '',
                           :user => username,
-                          :color => user_color}
+                          :color => user_color || '000'}
 end
 
 class TweetGetter
@@ -30,26 +39,12 @@ class TweetGetter
     end
   end
 
-  def username
-    @username
-  end
-
-  def is_user?
-    @client.user?(@username)
+  def is_user_with_tweets?
+    (@client.user?(@username)) && (@client.user(@username).statuses_count > 0)
   end
 
   def get_tweets!
-    # if no file, scrape twitter and write to json
-    if !has_tweet_file?
-      tweets = scrape_twitter
-      File.open('./data/'+tweet_file, 'w') do |handle|
-        handle.puts JSON.pretty_generate(tweets)
-      end
-    end
-
-    file = File.read('./data/'+tweet_file)
-    data_hash = JSON.parse(file)
-    make_text(data_hash)
+    clean_up_tweets(get_all_tweets)
   end
 
   def get_color!
@@ -58,20 +53,6 @@ class TweetGetter
 
   private
 
-  def scrape_twitter
-    response = get_tweets(@username)
-    text = clean_up_text(response)
-    chains = make_chains(text)
-  end
-
-  def has_tweet_file?
-    File.exists?('./data/'+tweet_file)
-  end
-
-  def tweet_file
-    "#{username}.json"
-  end
-
   # get max tweets for given user, from twitter gem
   def collect_with_max_id(collection=[], max_id=nil, &block)
     response = yield(max_id)
@@ -79,24 +60,20 @@ class TweetGetter
     response.empty? ? collection.flatten : collect_with_max_id(collection, response.last.id - 1, &block)
   end
 
-  def get_all_tweets(user)
-    collect_with_max_id do |max_id|
-      options = {count: 200, include_rts: false}
-      options[:max_id] = max_id unless max_id.nil?
-      @client.user_timeline(user, options)
-    end
-  end
-
-  def get_tweets(user)
+  def get_all_tweets
     begin
-      get_all_tweets(user)
+      collect_with_max_id do |max_id|
+        options = {count: 200, include_rts: false}
+        options[:max_id] = max_id unless max_id.nil?
+        @client.user_timeline(@username, options)
+      end
     rescue Twitter::Error::TooManyRequests => error
       sleep error.rate_limit.reset_in + 1
       retry
     end
   end
 
-  def clean_up_text(response)
+  def clean_up_tweets(response)
     tweets = []
 
     # get rid of links and @usernames
@@ -108,6 +85,24 @@ class TweetGetter
       end
     end
     tweets << nil
+  end
+end
+
+class MarkovGenerator
+
+  def has_file?(file)
+    File.exists?('./data/'+file_name(file))
+  end
+
+  def read_file(file)
+    read_file = File.read('./data/'+file_name(file))
+    data_hash = JSON.parse(read_file)
+  end
+
+  def write_file(chains, file)
+    File.open('./data/'+file_name(file), 'w') do |handle|
+      handle.puts JSON.pretty_generate(chains)
+    end
   end
 
   def make_chains(words)
@@ -130,7 +125,7 @@ class TweetGetter
     chains
   end
 
-  def make_text(chains)
+  def generate_text(chains)
     word_1 = get_first_word(chains)
     word_2 = chains[word_1].keys.sample
 
@@ -146,6 +141,12 @@ class TweetGetter
        end
     end
     end_in_punctuation(words).join(' ')
+  end
+
+  private
+
+  def file_name(name)
+    "#{name}.json"
   end
 
   def get_first_word(chains)
@@ -169,4 +170,3 @@ class TweetGetter
     words
   end
 end
-
