@@ -22,6 +22,9 @@ get '/' do
 
     if @tweet_getter.is_user_with_tweets?
       user_color = @tweet_getter.get_color!
+    end
+
+    if @markov.has_file?(username)
       generated_text = @markov.generate_text(@markov.read_file(username))
     end
   end
