@@ -10,7 +10,7 @@ scrape a user's tweets and use markov chains to generate text 🐦⛓
 - set up twitter application/get consumer key and secret [here](https://apps.twitter.com)
 - `$ touch secrets.sh`
 - paste your twitter key and secret into your `secrets.sh`, like so:
-```
+```sh
 export CONSUMER_SECRET="my_secret"
 export CONSUMER_KEY="my_key"
 ```

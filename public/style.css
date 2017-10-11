@@ -3,6 +3,16 @@
   font-size: 30px;
 }
 
+.alert-warning {
+  margin-top: 80px;
+  padding-bottom: 0;
+  position: absolute;
+}
+
+.flash {
+  padding-top: 5px;
+}
+
 form {
   margin-top: 200px;
 }

@@ -11,10 +11,10 @@ class TweetGetter
 
   def is_user_with_tweets?
     begin
-      return (@client.user?(@username)) && (@client.user(@username).statuses_count > 0)
+      (@client.user?(@username)) && (@client.user(@username).statuses_count > 0)
     rescue Twitter::Error::Forbidden => error
-      return false
-    end  
+      false
+    end
   end
 
   def get_tweets!

@@ -8,6 +8,8 @@ require_relative('../lib/tweet_getter.rb')
 set :root, File.join(File.dirname(__FILE__), '..')
 set :views, Proc.new { File.join(root, "views") }
 
+enable :sessions
+
 get '/' do
   username = params[:username]
 
@@ -26,12 +28,15 @@ get '/' do
 
     if @markov.has_file?(username)
       generated_text = @markov.generate_text(@markov.read_file(username))
+    else
+      session[:flash] = "User does not exist or has no tweets!"
     end
   end
 
   erb :index, :locals => {:text => generated_text || '',
                           :user => username,
-                          :color => user_color || '000'}
+                          :color => user_color || '000',
+                          :flash => session[:flash]}
 end
 
 
