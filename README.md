@@ -10,6 +10,6 @@ scrape a user's tweets and use markov chains to generate text 🐦⛓
 export CONSUMER_SECRET="my_secret"
 export CONSUMER_KEY="my_key"
 ```
-- `$ soure secrets.sh`
+- `$ source secrets.sh`
 - `$ bundle install`
 - `$ ruby controllers/app.rb`
