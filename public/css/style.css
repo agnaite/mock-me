@@ -31,3 +31,12 @@ form {
   text-align: right;
   letter-spacing: 1px;
 }
+
+.btn-generate {
+  margin-top: 40px;
+  background-color: mistyrose;
+}
+
+.btn-generate:hover {
+  background-color: lightpink;
+}
