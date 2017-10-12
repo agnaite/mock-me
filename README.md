@@ -20,3 +20,7 @@ export CONSUMER_KEY="my_key"
 - `$ source secrets.sh`
 - `$ bundle install`
 - `$ ruby controllers/app.rb`
+
+## To run tests:
+
+- `$ rspec`
