@@ -7,6 +7,8 @@ scrape a user's tweets and use markov chains to generate text 🐦⛓
 
 ![example_3](/public/img/_readme-img/example_3.png)
 
+![example_4](/public/img/_readme-img/example_4.png)
+
 ## To set-up:
 
 - `$ git clone https://github.com/agnaite/mock-me.git`
