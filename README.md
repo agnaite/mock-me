@@ -23,4 +23,4 @@ export CONSUMER_KEY="my_key"
 
 ## To run tests:
 
--`$ rspec`
+- `$ rspec`
