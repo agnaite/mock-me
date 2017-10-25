@@ -15,7 +15,11 @@ class MarkovGenerator
     end
   end
 
-  def make_chains(words)
+  def make_chains(tweets)
+
+    tweets = tweets.map { |text| clean_up_text(text) }
+    words = tweets.flat_map { |text| text.split }
+
     chains = {}
 
     for i in 0..words.length-2
@@ -42,18 +46,34 @@ class MarkovGenerator
     words = [word_1, word_2]
     word = chains[word_1][word_2].sample
 
-    while (chains.include? word_1) && (chains[word_1].include? word_2) && (words.length < 50)
-       word_1 = word_2
-       word_2 = word
-       words << word
-       if (chains.include? word_1) && (chains[word_1].include? word_2)
-         word = chains[word_1][word_2].sample
-       end
+
+    while (chains.include? word_1) && (chains[word_1].include? word_2)
+      if words.join(' ').length > 140
+        break
+      end
+      word_1 = word_2
+      word_2 = word
+      words << word
+      if ['!', '.', '?'].include? word[-1]
+        break
+      end
+      if (chains.include? word_1) && (chains[word_1].include? word_2)
+        word = chains[word_1][word_2].sample
+      end
     end
-    end_in_punctuation(words).join(' ')
+    words.join(' ')
+    # end_in_punctuation(words).join(' ')
   end
 
   private
+
+  def clean_up_text(text)
+    text
+      .split
+      .reject { |word| word[0] == '@' }
+      .reject { |word| word.start_with?('http') }
+      .join(' ')
+  end
 
   def file_name(name)
     "#{name}.json"

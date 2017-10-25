@@ -18,7 +18,7 @@ class TweetGetter
   end
 
   def get_tweets!
-    clean_up_tweets(get_all_tweets)
+    get_all_tweets.map { |tweet| tweet.text }
   end
 
   def get_color!
@@ -45,19 +45,5 @@ class TweetGetter
       sleep error.rate_limit.reset_in + 1
       retry
     end
-  end
-
-  def clean_up_tweets(response)
-    tweets = []
-
-    # get rid of links and @usernames
-    for tweet in response
-      for word in tweet.text.split
-        if word[0] != '@' && !word.start_with?('http')
-          tweets.push(word)
-        end
-      end
-    end
-    tweets << nil
   end
 end
